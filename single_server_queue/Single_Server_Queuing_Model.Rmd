@@ -1,0 +1,66 @@
+---
+title: "Single-Server Queuing Model."
+author: "Suraj Nath"
+date: "20 February 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introdunction
+
+This is a discrete-event simulation of a simple M/M/1 queue. 
+
+An M/M/1 system has exponential arrivals (M/M/1), a single server (M/M/1) with exponential service time (M/M/1) and an inifinite queue (implicit M/M/1/(infty)). 
+
+For instance, people arriving at an ATM at rate (lambda), waiting their turn in the street and withdrawing money at rate (mu).
+
+[Simmer](https://github.com/r-simmer/simmer) is discrete-event simulation library we used for simulation.
+
+```{r}
+library(simmer)
+library(ggplot2)
+library(simmer.plot)
+set.seed(1234)
+
+lambda <- 2
+mu <- 4
+rho <- lambda/mu # = 2/4
+
+mm1.trajectory <- trajectory() %>%
+  seize("resource", amount=1) %>%
+  timeout(function() rexp(1, mu)) %>%
+  release("resource", amount=1)
+
+mm1.env <- simmer() %>%
+  add_resource("resource", capacity=1, queue_size=Inf) %>%
+  add_generator("arrival", mm1.trajectory, function() rexp(1, lambda)) %>%
+  run(until=2000)
+```
+
+```{r}
+# Evolution of the average number of customers in the system
+graph <- plot_resource_usage(mm1.env, "resource", items="system")
+
+# Theoretical value
+mm1.N <- rho/(1-rho)
+graph + geom_hline(yintercept=mm1.N)
+```
+
+```{r}
+plot_resource_usage(mm1.env, "resource", items=c("queue", "server"), steps=TRUE) +
+  xlim(0, 20) + ylim(0, 4)
+
+```
+
+```{r}
+mm1.arrivals <- get_mon_arrivals(mm1.env)
+mm1.t_system <- mm1.arrivals$end_time - mm1.arrivals$start_time
+
+mm1.T <- mm1.N / lambda
+mm1.T ; mean(mm1.t_system)
+```
