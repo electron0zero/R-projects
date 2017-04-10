@@ -1,0 +1,58 @@
+---
+title: "Car Wash Station Simulation"
+author: "Suraj Nath"
+date: "10 April 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(simmer)
+library(simmer.plot)
+
+NUM_MACHINES <- 2  # Number of machines in the carwash
+WASHTIME <- 5      # Minutes it takes to clean a car
+T_INTER <- 7       # Create a car every ~7 minutes
+SIM_TIME <- 60     # Simulation time in minutes
+
+# setup
+set.seed(42)
+env <- simmer()
+```
+
+```{r}
+car <- trajectory() %>%
+  log_("arrives at the carwash") %>%
+  seize("wash", 1) %>%
+  log_("enters the carwash") %>%
+  timeout(WASHTIME) %>%
+  set_attribute("dirt_removed", function() sample(50:99, 1)) %>%
+  log_(function(attr) 
+    paste0(attr["dirt_removed"], "% of dirt was removed")) %>%
+  release("wash", 1) %>%
+  log_("leaves the carwash")
+```
+
+
+```{r}
+env %>%
+  add_resource("wash", NUM_MACHINES) %>%
+  # feed the trajectory with 4 initial cars
+  add_generator("car_initial", car, at(rep(0, 4))) %>%
+  # new cars approx. every T_INTER minutes
+  add_generator("car", car, function() sample((T_INTER-2):(T_INTER+2), 1)) %>%
+  # start the simulation
+  run(SIM_TIME)
+```
+
+# Plot Things
+```{r }
+plot(env, what = "resources", metric = "usage", c("wash"))
+plot(env, what = "resources", metric = "utilization", c("wash"))
+plot(env, what = "arrivals", metric = "activity_time")
+plot(env, what = "arrivals", metric = "waiting_time")
+plot(env, what = "arrivals", metric = "flow_time")
+```
