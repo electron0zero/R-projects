@@ -1,0 +1,116 @@
+---
+title: "Snakes and Ladders"
+author: "Suraj Nath"
+date: "Feb. 19, 2017"
+output:
+  pdf_document: default
+---
+# Snakes and Ladders Game Simulation
+
+## Problem Statment
+
+Consider the following snakes-and-ladders game. Let N be the number of tosses to reach the finish
+using a fair dice. Write a R program to calculate the expectation of N . Also, draw a plot in which
+the x -axis shows the number of rolls, and the y -axis shows the percentage of games that were
+completed in that number of rolls.
+
+---
+
+## Code 
+
+The ladders and slides/snakes will be set up as a data frame,
+
+```{r}
+ladder.df <- data.frame(start=c(3,11), end=c(13,17))
+slide.df <- data.frame(start=c(10,16,18), end=c(5,2,8))
+```
+
+``` {r}
+library(knitr)
+```
+
+The ladders:
+
+``` {r}
+kable(ladder.df, align="c")
+```
+
+The Snakes:
+
+``` {r}
+kable(slide.df, align="c")
+```
+
+
+``` {r}
+library(foreach)
+library(doParallel)
+```
+
+``` {r}
+registerDoParallel(cores=4)
+```
+
+``` {r}
+getDoParWorkers()
+```
+``` {r}
+num.iter <- 100 # Number of play throughs aka games
+
+# Get timing as well
+stime <- system.time({
+  out.seq <- foreach(icount(num.iter), .combine=rbind) %do% {
+    curLoc <- 0
+    nroll <- 0
+    slides <- 0
+    ladders <- 0
+    # Keep rolling dice and moving until reach 17 or greater ending the game
+    while(curLoc < 17) {
+      roll <- sample(6,1) # generate random number between [1 to 6]
+      curLoc <- curLoc + roll # increase position
+      nroll <- nroll + 1 # increase number of rolls
+      # Need to check if we landed on a ladder or slide and move forward or back
+      if (any(ladder.df$start %in% curLoc)) {
+        curLoc <- ladder.df$end[ladder.df$start %in% curLoc]
+        ladders <- ladders + 1
+      }
+      if (any(slide.df$start %in% curLoc)) {
+        curLoc <- slide.df$end[slide.df$start %in% curLoc]
+        slides <- slides + 1
+      }
+    }
+    # Create output to store, num rolls, num ladders hit, num slides hit
+    out.info <- c(nroll, ladders, slides)
+  }})[3]
+```
+#### Time taken by simulation
+
+```{r}
+stime
+```
+
+## Output
+
+### Plot for percentage chance to win the game in n rolls:
+
+``` {r}
+d <- density(out.seq[,1])
+d$y <- d$y * 100
+plot(d, main="Percentage Chance to Win in n-Rolls", xlab="Number of Rolls", ylab="Percentage", xlim=c(0,200), axes=F)
+axis(2)
+axis(1, at=seq(0,200,5))
+abline(v=d$x[which.max(d$y)], col="red")
+```
+
+### cumulative distribution function:
+
+``` {r}
+plot(ecdf(out.seq[,1]), xlab="Number of Rolls", ylab="",main="")
+```
+
+## Conclusion
+
+In this assignment we learned about simulation, system variables, simulation clock etc.
+
+I also created a full scale sankes and ladders simulation which can be found on my github account
+[(https://github.com/electron0zero/R-projects/tree/master/snakes_and_ladders)](https://github.com/electron0zero/R-projects/tree/master/snakes_and_ladders)

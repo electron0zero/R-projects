@@ -1,0 +1,25 @@
+---  
+title: Final report(Modeling and Simulation)
+author: Surajnath Sidh(U101114FCS146)
+date: '17 Apr. 2017'
+output: 
+  pdf_document:
+    toc: yes 
+---
+
+```{r child = 'snakes_and_ladders.Rmd'}
+```
+
+```{r child = 'singleQueue.Rmd'}
+```
+
+```{r child = 'harbor-port.Rmd'}
+```
+
+# Final Conclusion
+
+In these Assignments we learned about simulation and created simulations to model real life problems.
+Simulations are extreamly usefull, They save us time and resources and provides us the stastical anaysis of probelm (problem model to be exact, if model is inaccurate the results will be wrong)
+
+Other then these assignments I took some time to model few things and creted simulations which can be found on my GitHub account
+[(https://github.com/electron0zero/R-projects)](https://github.com/electron0zero/R-projects)
