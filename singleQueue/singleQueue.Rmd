@@ -1,0 +1,51 @@
+---
+title: "Single Server Queuing Model"
+author: "Suraj Nath"
+date: "25 February 2017"
+output:
+  pdf_document: default
+---
+
+# Single Server Queuing Model
+### Problem Statment
+
+Write a R program to simulate a single-server queue
+
+## Function for SSQ
+
+```{r}
+ssq <- function(ra, rs, numOfCustomers) {
+  wait_time <- 0;
+  total_arrival_time <- 0;
+  total_wait_time<- 0;
+  total_idle_time <- 0;
+  prvious_service_time <- 0;
+  for (i in 1:numOfCustomers)
+  {
+    serTime <- rexp(1, rs);
+    interArrTime <- rexp(1, ra);
+    total_arrival_time <- total_arrival_time + interArrTime;
+    wait_time <- wait_time - interArrTime + prvious_service_time;
+    prvious_service_time <- serTime;
+    if (wait_time >= 0)
+    {
+      total_wait_time <- total_wait_time + wait_time
+    }
+    else
+    {
+      total_idle_time <- total_idle_time - wait_time;
+      wait_time <- 0;
+    }
+  }
+  print(paste("Expected Utilization is",1 - total_idle_time/total_arrival_time,sep = " "))
+  print(paste("Expected Average delay in the queue is",total_wait_time/numOfCustomers,"minutes.", sep = " "))
+  print(paste("Expected Average Customers in the queue is",total_wait_time/total_arrival_time, sep = " "))
+}
+```
+
+## call the function with params
+```{r}
+# ssq(lamda, mu, number_of_cust)
+ssq(1,0.5,20)
+```
+

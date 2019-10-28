@@ -96,8 +96,6 @@ ship_attrs <- function(){
     }
   return(c(berth, quan, load_time, unload_time, ship_type))
 }
-
-
 ```
 
 
@@ -136,13 +134,9 @@ env %>%
 # Plot Things
 ```{r}
 plot(env, what = "resources", metric = "usage", c("berth1", "berth2", "berth3"))
-
 plot(env, what = "resources", metric = "utilization", c("berth1", "berth2", "berth3"))
-
 plot(env, what = "arrivals", metric = "activity_time")
-
 plot(env, what = "arrivals", metric = "waiting_time")
-
 plot(env, what = "arrivals", metric = "flow_time")
 ```
 

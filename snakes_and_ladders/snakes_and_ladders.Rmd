@@ -4,7 +4,6 @@ author: "Suraj Nath"
 date: "Feb. 19, 2017"
 output:
   pdf_document: default
-  html_document: default
 ---
 # Snakes and Ladders Game Simulation with R
 
@@ -17,8 +16,8 @@ Snakes and Ladders is a very simple board game between two or more players. The 
 The ladders and slides/snakes will be set up as a data frame,
 
 ```{r}
-ladder.df <- data.frame(start=c(1,4,9,21,28,36,51,71,80), end=c(38,14,31,42,84,44,67,91,100))
-slide.df <- data.frame(start=c(98,95,93,87,64,62,56,49,47,16), end=c(78,75,73,24,60,19,53,11,26,6))
+ladder.df <- data.frame(start=c(3,11), end=c(13,17))
+slide.df <- data.frame(start=c(10,16,18), end=c(5,2,8))
 ```
 
 ``` {r}
@@ -37,27 +36,6 @@ The Snakes:
 kable(slide.df, align="c")
 ```
 
-```{r}
-curLoc <- 0 # Current location
-nroll <- 0 # Number of rolls
-slides <- 0 # Number of slides encountered
-ladders <- 0 # Number of ladders encountered
-# Keep rolling dice and moving until reach 100 or greater ending the game
-while(curLoc < 100) {
-  roll <- sample(6,1) # generate random number between [1 to 6]
-  curLoc <- curLoc + roll # increase position
-  nroll <- nroll + 1 # increase number of rolls
-  # Need to check if we landed on a ladder or slide and move forward or back
-  if (any(ladder.df$s %in% curLoc)) {
-    curLoc <- ladder.df$e[ladder.df$s %in% curLoc]
-    ladders <- ladders + 1
-  }
-  if (any(slide.df$s %in% curLoc)) {
-    curLoc <- slide.df$e[slide.df$s %in% curLoc]
-    slides <- slides + 1
-  }
-}
-```
 
 ``` {r}
 library(foreach)
@@ -72,7 +50,7 @@ registerDoParallel(cores=4)
 getDoParWorkers()
 ```
 ``` {r}
-num.iter <- 500 # Number of play throughs
+num.iter <- 100 # Number of play throughs aka games
 
 # Get timing as well
 stime <- system.time({
@@ -81,18 +59,18 @@ stime <- system.time({
     nroll <- 0
     slides <- 0
     ladders <- 0
-    # Keep rolling dice and moving until reach 100 or greater ending the game
-    while(curLoc < 100) {
+    # Keep rolling dice and moving until reach 17 or greater ending the game
+    while(curLoc < 17) {
       roll <- sample(6,1) # generate random number between [1 to 6]
       curLoc <- curLoc + roll # increase position
       nroll <- nroll + 1 # increase number of rolls
       # Need to check if we landed on a ladder or slide and move forward or back
-      if (any(ladder.df$s %in% curLoc)) {
-        curLoc <- ladder.df$e[ladder.df$s %in% curLoc]
+      if (any(ladder.df$start %in% curLoc)) {
+        curLoc <- ladder.df$end[ladder.df$start %in% curLoc]
         ladders <- ladders + 1
       }
-      if (any(slide.df$s %in% curLoc)) {
-        curLoc <- slide.df$e[slide.df$s %in% curLoc]
+      if (any(slide.df$start %in% curLoc)) {
+        curLoc <- slide.df$end[slide.df$start %in% curLoc]
         slides <- slides + 1
       }
     }
@@ -100,22 +78,10 @@ stime <- system.time({
     out.info <- c(nroll, ladders, slides)
   }})[3]
 ```
-Time taken by simulation
+####Time taken by simulation
 
 ```{r}
 stime
-```
-
-Take a look at a histogram of number of rolls to complete the game
-
-``` {r }
-h <- hist(out.seq[,1], breaks=seq(0,305,5))
-```
-
-``` {r}
-plot(h, main="", xlab="Number of Rolls", ylab="Games Completed", xlim=c(0,200), axes=F)
-axis(1, at=seq(0,200,5))
-axis(2)
 ```
 
 Plot for percentage chance to win the game in n rolls:
